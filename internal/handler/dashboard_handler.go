@@ -24,11 +24,21 @@ func NewDashboardHandler(s *service.DashboardService, logger *zap.Logger) *Dashb
 func (h *DashboardHandler) Summary(c *gin.Context) {
 	summary, err := h.service.GetSummary()
 	if err != nil {
-		h.logger.Error("failed to get dashboard summary", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		h.logger.Error("failed to get dashboard summary",
+			zap.Error(err),
+		)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
 	h.logger.Info("dashboard summary retrieved")
-	c.JSON(http.StatusOK, summary)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": summary,
+	})
 }

@@ -326,3 +326,68 @@ func TestTransactionHandler_EdgeCases(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 	})
 }
+func TestTransactionHandler_Delete_InvalidID(t *testing.T) {
+	repo := &mockTransactionRepo{}
+	r := setupTransactionRouter(repo)
+
+	req := httptest.NewRequest(http.MethodDelete, "/transactions/abc", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+func TestTransactionHandler_Delete_NotFound(t *testing.T) {
+	repo := &mockTransactionRepo{
+		deleteFn: func(id uint) error {
+			return domain.ErrTransactionNotFound
+		},
+	}
+
+	r := setupTransactionRouter(repo)
+
+	req := httptest.NewRequest(http.MethodDelete, "/transactions/99", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+func TestTransactionHandler_UpdateStatus_InvalidID(t *testing.T) {
+	repo := &mockTransactionRepo{}
+	r := setupTransactionRouter(repo)
+
+	req := httptest.NewRequest(
+		http.MethodPut,
+		"/transactions/abc",
+		bytes.NewBufferString(`{"status":"success"}`),
+	)
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+func TestTransactionHandler_UpdateStatus_InvalidJSON(t *testing.T) {
+	repo := &mockTransactionRepo{}
+	r := setupTransactionRouter(repo)
+
+	req := httptest.NewRequest(
+		http.MethodPut,
+		"/transactions/1",
+		bytes.NewBufferString(`{"status":123}`), // wrong type
+	)
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}

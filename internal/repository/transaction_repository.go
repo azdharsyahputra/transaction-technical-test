@@ -111,13 +111,13 @@ func (r *TransactionRepository) FindAll(filter domain.TransactionFilter) ([]doma
 
 	return result, nil
 }
-func (r *TransactionRepository) Update(tx *domain.Transaction) error {
-	model := fromDomain(tx)
 
+func (r *TransactionRepository) Update(tx *domain.Transaction) error {
 	result := r.db.Model(&TransactionModel{}).
 		Where("id = ?", tx.ID).
 		Updates(map[string]interface{}{
-			"status": model.Status,
+			"status": tx.Status,
+			"amount": tx.Amount,
 		})
 
 	if result.RowsAffected == 0 {
@@ -126,6 +126,7 @@ func (r *TransactionRepository) Update(tx *domain.Transaction) error {
 
 	return result.Error
 }
+
 func (r *TransactionRepository) Delete(id uint) error {
 	result := r.db.Delete(&TransactionModel{}, id)
 
@@ -138,10 +139,13 @@ func (r *TransactionRepository) Delete(id uint) error {
 func (r *TransactionRepository) TotalSuccessToday() (float64, error) {
 	var total float64
 
+	start := time.Now().Truncate(24 * time.Hour)
+	end := start.Add(24 * time.Hour)
+
 	err := r.db.Model(&TransactionModel{}).
 		Select("COALESCE(SUM(amount), 0)").
 		Where("status = ?", string(domain.StatusSuccess)).
-		Where("DATE(created_at) = CURRENT_DATE").
+		Where("created_at >= ? AND created_at < ?", start, end).
 		Scan(&total).Error
 
 	return total, err
@@ -149,18 +153,14 @@ func (r *TransactionRepository) TotalSuccessToday() (float64, error) {
 func (r *TransactionRepository) AverageAmountPerUser() (float64, error) {
 	var avg float64
 
-	query := `
-		SELECT COALESCE(AVG(total), 0) FROM (
-			SELECT SUM(amount) AS total
-			FROM transaction_models
-			WHERE status = ?
-			GROUP BY user_id
-		) t
-	`
+	err := r.db.Model(&TransactionModel{}).
+		Select("COALESCE(AVG(amount), 0)").
+		Where("status = ?", string(domain.StatusSuccess)).
+		Scan(&avg).Error
 
-	err := r.db.Raw(query, string(domain.StatusSuccess)).Scan(&avg).Error
 	return avg, err
 }
+
 func (r *TransactionRepository) Latest(limit int) ([]domain.Transaction, error) {
 	var models []TransactionModel
 

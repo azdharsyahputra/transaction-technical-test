@@ -35,10 +35,12 @@ type UpdateStatusRequest struct {
 func (h *TransactionHandler) Create(c *gin.Context) {
 	var req CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		h.logger.Warn("invalid create transaction request",
-			zap.Error(err),
-		)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		h.logger.Warn("invalid create transaction request", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
@@ -49,7 +51,11 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 			zap.Float64("amount", req.Amount),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
@@ -59,27 +65,33 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 		zap.Float64("amount", tx.Amount),
 	)
 
-	c.JSON(http.StatusCreated, tx)
+	c.JSON(http.StatusCreated, gin.H{
+		"data": tx,
+	})
 }
 
 func (h *TransactionHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		h.logger.Warn("invalid transaction id",
-			zap.String("id", idStr),
-		)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		h.logger.Warn("invalid transaction id", zap.String("id", idStr))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": "invalid id",
+			},
+		})
 		return
 	}
 
 	tx, err := h.service.GetByID(uint(id))
 	if err != nil {
 		if err == domain.ErrTransactionNotFound {
-			h.logger.Info("transaction not found",
-				zap.Uint("transaction_id", uint(id)),
-			)
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			h.logger.Info("transaction not found", zap.Uint("transaction_id", uint(id)))
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"message": err.Error(),
+				},
+			})
 			return
 		}
 
@@ -87,15 +99,19 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 			zap.Uint("transaction_id", uint(id)),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
-	h.logger.Info("transaction retrieved",
-		zap.Uint("transaction_id", tx.ID),
-	)
+	h.logger.Info("transaction retrieved", zap.Uint("transaction_id", tx.ID))
 
-	c.JSON(http.StatusOK, tx)
+	c.JSON(http.StatusOK, gin.H{
+		"data": tx,
+	})
 }
 
 func (h *TransactionHandler) GetAll(c *gin.Context) {
@@ -104,10 +120,12 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 	if userID := c.Query("user_id"); userID != "" {
 		id, err := strconv.Atoi(userID)
 		if err != nil {
-			h.logger.Warn("invalid user_id query",
-				zap.String("user_id", userID),
-			)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
+			h.logger.Warn("invalid user_id query", zap.String("user_id", userID))
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": gin.H{
+					"message": "invalid user_id",
+				},
+			})
 			return
 		}
 		uid := uint(id)
@@ -131,7 +149,11 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 			zap.Any("filter", filter),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
@@ -140,14 +162,26 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 		zap.Any("filter", filter),
 	)
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, gin.H{
+		"data": result,
+		"meta": gin.H{
+			"count": len(result),
+			"page":  page,
+			"limit": limit,
+		},
+	})
 }
 
 func (h *TransactionHandler) UpdateStatus(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		h.logger.Warn("invalid transaction id", zap.String("id", c.Param("id")))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		h.logger.Warn("invalid transaction id", zap.String("id", idStr))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": "invalid id",
+			},
+		})
 		return
 	}
 
@@ -157,7 +191,11 @@ func (h *TransactionHandler) UpdateStatus(c *gin.Context) {
 			zap.Uint("transaction_id", uint(id)),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
@@ -167,7 +205,11 @@ func (h *TransactionHandler) UpdateStatus(c *gin.Context) {
 			zap.String("status", string(req.Status)),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
@@ -183,19 +225,23 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		h.logger.Warn("invalid transaction id",
-			zap.String("id", idStr),
-		)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		h.logger.Warn("invalid transaction id", zap.String("id", idStr))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"message": "invalid id",
+			},
+		})
 		return
 	}
 
 	if err := h.service.Delete(uint(id)); err != nil {
 		if err == domain.ErrTransactionNotFound {
-			h.logger.Warn("transaction not found",
-				zap.Uint("transaction_id", uint(id)),
-			)
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			h.logger.Warn("transaction not found", zap.Uint("transaction_id", uint(id)))
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": gin.H{
+					"message": err.Error(),
+				},
+			})
 			return
 		}
 
@@ -203,13 +249,15 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 			zap.Uint("transaction_id", uint(id)),
 			zap.Error(err),
 		)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
 		return
 	}
 
-	h.logger.Info("transaction deleted",
-		zap.Uint("transaction_id", uint(id)),
-	)
+	h.logger.Info("transaction deleted", zap.Uint("transaction_id", uint(id)))
 
 	c.Status(http.StatusNoContent)
 }
