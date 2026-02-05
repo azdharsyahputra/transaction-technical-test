@@ -63,8 +63,12 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.logger.Warn("invalid transaction id",
+			zap.String("id", idStr),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
@@ -72,21 +76,37 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 	tx, err := h.service.GetByID(uint(id))
 	if err != nil {
 		if err == domain.ErrTransactionNotFound {
+			h.logger.Info("transaction not found",
+				zap.Uint("transaction_id", uint(id)),
+			)
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+
+		h.logger.Error("failed to get transaction",
+			zap.Uint("transaction_id", uint(id)),
+			zap.Error(err),
+		)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	h.logger.Info("transaction retrieved",
+		zap.Uint("transaction_id", tx.ID),
+	)
+
 	c.JSON(http.StatusOK, tx)
 }
+
 func (h *TransactionHandler) GetAll(c *gin.Context) {
 	var filter domain.TransactionFilter
 
 	if userID := c.Query("user_id"); userID != "" {
 		id, err := strconv.Atoi(userID)
 		if err != nil {
+			h.logger.Warn("invalid user_id query",
+				zap.String("user_id", userID),
+			)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
 			return
 		}
@@ -107,12 +127,22 @@ func (h *TransactionHandler) GetAll(c *gin.Context) {
 
 	result, err := h.service.GetAll(filter)
 	if err != nil {
+		h.logger.Error("failed to get transactions",
+			zap.Any("filter", filter),
+			zap.Error(err),
+		)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	h.logger.Info("transactions retrieved",
+		zap.Int("count", len(result)),
+		zap.Any("filter", filter),
+	)
+
 	c.JSON(http.StatusOK, result)
 }
+
 func (h *TransactionHandler) UpdateStatus(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

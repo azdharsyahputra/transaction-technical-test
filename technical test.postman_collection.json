@@ -22,7 +22,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"user_id\": 1,\n  \"amount\": 250000\n}",
+					"raw": "{\n  \"user_id\": 2,\n  \"amount\": 250000\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -149,6 +149,27 @@
 						"api",
 						"transactions",
 						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/transactions/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"transactions",
+						"1"
 					]
 				}
 			},
