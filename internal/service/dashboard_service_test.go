@@ -10,14 +10,14 @@ import (
 
 func TestDashboardService_GetSummary(t *testing.T) {
 	mockRepo := new(MockRepo)
-	svc := NewDashboardService(mockRepo) // variabel namanya svc
+	svc := NewDashboardService(mockRepo)
 
 	t.Run("Success", func(t *testing.T) {
 		mockRepo.On("TotalSuccessToday").Return(50000.0, nil).Once()
 		mockRepo.On("AverageAmountPerUser").Return(25000.0, nil).Once()
 		mockRepo.On("Latest", 10).Return([]domain.Transaction{{ID: 1}}, nil).Once()
 
-		summary, err := svc.GetSummary() // Pastikan panggil svc, bukan s
+		summary, err := svc.GetSummary()
 
 		assert.NoError(t, err)
 		assert.NotNil(t, summary)
@@ -28,7 +28,7 @@ func TestDashboardService_GetSummary(t *testing.T) {
 	t.Run("Error on TotalSuccess", func(t *testing.T) {
 		mockRepo.On("TotalSuccessToday").Return(0.0, errors.New("db error")).Once()
 
-		summary, err := svc.GetSummary() // Sini juga ganti jadi svc
+		summary, err := svc.GetSummary()
 
 		assert.Error(t, err)
 		assert.Nil(t, summary)

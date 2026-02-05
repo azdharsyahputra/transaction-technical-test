@@ -18,6 +18,7 @@ func NewDashboardService(repo domain.TransactionRepository) *DashboardService {
 	}
 }
 
+// Get Summary untuk dashboard
 func (s *DashboardService) GetSummary() (*DashboardSummary, error) {
 	totalToday, err := s.repo.TotalSuccessToday()
 	if err != nil {

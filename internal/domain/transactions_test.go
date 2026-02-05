@@ -20,7 +20,6 @@ func TestNewTransaction(t *testing.T) {
 }
 
 func TestUpdateStatus(t *testing.T) {
-	// Table-driven test: ngetes banyak case sekaligus
 	tests := []struct {
 		name          string
 		initialStatus TransactionStatus
