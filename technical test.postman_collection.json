@@ -50,7 +50,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/transactions?user_id=1&status=success&page=1&limit=10\n",
+					"raw": "http://localhost:8080/api/transactions?user_id=6&status=success&page=1&limit=10\n",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -63,7 +63,7 @@
 					"query": [
 						{
 							"key": "user_id",
-							"value": "1"
+							"value": "6"
 						},
 						{
 							"key": "status",
@@ -97,7 +97,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/api/transactions/4",
+					"raw": "http://localhost:8080/api/transactions/6",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -106,7 +106,7 @@
 					"path": [
 						"api",
 						"transactions",
-						"4"
+						"6"
 					]
 				}
 			},
@@ -139,7 +139,7 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/transactions/4",
+					"raw": "http://localhost:8080/api/transactions/6",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -148,7 +148,7 @@
 					"path": [
 						"api",
 						"transactions",
-						"4"
+						"6"
 					]
 				}
 			},
@@ -160,7 +160,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/api/transactions/1",
+					"raw": "http://localhost:8080/api/transactions/6",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -169,7 +169,7 @@
 					"path": [
 						"api",
 						"transactions",
-						"1"
+						"6"
 					]
 				}
 			},
