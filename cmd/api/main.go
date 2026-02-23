@@ -38,5 +38,3 @@ func main() {
 	log.Println("server running on :8080")
 	log.Fatal(r.Run(":8080"))
 }
-
-//testing
